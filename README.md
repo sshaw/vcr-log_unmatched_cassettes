@@ -16,7 +16,7 @@ In your spec configuration, after loading VCR, call:
 VCR::LogUnmatchedCassettes.install
 ```
 
-Now tests that fails due to VCR being able to unmatch the request (`VCR::Errors::UnhandledHTTPRequestError`) will be output to the system's temp directory in a CSV.
+Now tests that fail due to VCR being able to unmatch the request (`VCR::Errors::UnhandledHTTPRequestError`) will be output to the system's temp directory in a CSV.
 If you're using Rails it will be output to `./tmp`.
 
 ## Why?
@@ -28,7 +28,7 @@ Often one needs the path solely to delete the cassette and re-record it. This is
 
 `record: :all` can be applied per test, but this requires modifying the test so that it can be scoped to `:all`.
 
-Remove all cassettes is an option but this can clutter your git history with needless and _very_ bloated diffs.
+Removing all cassettes is an option but this can clutter your git history with needless and _very_ bloated diffs.
 
 ## License
 
