@@ -29,6 +29,8 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency "vcr"
-  spec.add_development_dependency "rspec"
   spec.add_development_dependency "bundler"
+  spec.add_development_dependency "csv"
+  spec.add_development_dependency "rspec"
+  spec.add_development_dependency "vcr"
 end
