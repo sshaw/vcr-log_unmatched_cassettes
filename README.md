@@ -21,11 +21,14 @@ If you're using Rails it will be output to `./tmp`.
 
 ## Why?
 
-When tests fail due to unmatched HTTP requests the path is output within a large blob of text. This may fine for a couple of tests but
+When tests fail due to unmatched HTTP requests the path is output within a large blob of text. This may be fine for a couple of tests but
 with large amounts of tests the path can be a pain track down. This becomes worse when one needs the paths for multiple tests.
 
-Often one needs the path solely to delete the cassette and re-record it. This is often preferred using VCR's `record: :all` globally as it's a bit heavy-handed.
+Often one needs the path solely to delete the cassette and re-record it. This is often preferred to using VCR's `record: :all` globally as `:all` is a bit heavy-handed.
+
 `record: :all` can be applied per test, but this requires modifying the test so that it can be scoped to `:all`.
+
+Remove all cassettes is an option but this can clutter your git history with needless and _very_ bloated diffs.
 
 ## License
 
