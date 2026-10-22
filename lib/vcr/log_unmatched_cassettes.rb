@@ -8,10 +8,22 @@ require "csv"
 module VCR
   module LogUnmatchedCassettes
     module MinitestHook         # :nodoc:
+      # Minitest stores the test's exception by running it through
+      # `sanitize_exception` in `capture_exceptions`. A marshable exception is
+      # kept as-is, but VCR::Errors::UnhandledHTTPRequestError is not marshable
+      # (it memoizes the active cassette), so Minitest "neuters" it into a
+      # generic RuntimeError, losing the class and any `cause` chain. Capture
+      # the original exception here so it can still be identified in
+      # `after_teardown` (where `$!` is nil).
+      def sanitize_exception(error)
+        @vcr_unmatched_error = error
+        super
+      end
+
       def after_teardown
         super
 
-        vcr_error = VCR::LogUnmatchedCassettes.find_vcr_error($!)
+        vcr_error = VCR::LogUnmatchedCassettes.find_vcr_error(@vcr_unmatched_error)
         return unless vcr_error
 
         cassette = VCR.current_cassette
