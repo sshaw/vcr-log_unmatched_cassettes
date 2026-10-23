@@ -9,6 +9,11 @@ module VCR
   module LogUnmatchedCassettes
     REPORT_PREFIX = "vcr-unmatched-cassettes"
 
+    # Sentinels from VCR's UnhandledHTTPRequestError message. Used as a fallback
+    # when the exception class itself can no longer be reached (see
+    # `find_vcr_error`).
+    UNHANDLED_REQUEST_MESSAGE = "An HTTP request has been made that VCR does not know how to handle"
+
     module MinitestHook         # :nodoc:
       # Minitest stores the test's exception by running it through
       # `sanitize_exception` in `capture_exceptions`. A marshable exception is
@@ -89,12 +94,20 @@ module VCR
         warn "\n[VCR::LogUnmatchedCassettes] Wrote #{@failures.size} failed cassette(s) to: #{filename}"
       end
 
-      # Walks the exception + cause chain looking for UnhandledHTTPRequestError
+      # Walks the exception + cause chain looking for UnhandledHTTPRequestError.
+      #
+      # Some frameworks re-raise VCR's error as a different class after it has
+      # crossed a thread boundary (e.g. Capybara's app server). Re-raising a
+      # fresh exception object replaces the cause chain, so the VCR error is no
+      # longer reachable via `cause`. In that case the only thing left is its
+      # message, which VCR's wrapper embeds into its own message. Match on the
+      # message as a fallback.
       def find_vcr_error(exception)
         current = exception
 
         while current
           return current if current.is_a?(VCR::Errors::UnhandledHTTPRequestError)
+          return current if current.message.to_s.include?(UNHANDLED_REQUEST_MESSAGE)
           current = current.cause
         end
 

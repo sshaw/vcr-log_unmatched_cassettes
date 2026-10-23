@@ -21,6 +21,33 @@ RSpec.describe VCR::LogUnmatchedCassettes do
     wrapper
   end
 
+  # Simulates how a VCR error reaches the test thread under Capybara:
+  #   1. The app server thread rescues the UnhandledHTTPRequestError and
+  #      re-raises it as a different class, embedding the VCR message.
+  #   2. Capybara then re-raises that server error in the test thread while a
+  #      Capybara::ElementNotFound is already in flight. Raising a fresh
+  #      exception object replaces the cause chain, so the original VCR error
+  #      is no longer reachable via `cause`.
+  def wrap_across_threads(error)
+    server_error = begin
+      raise error
+    rescue StandardError
+      begin
+        raise "ConnectionError: #{error.message}"
+      rescue StandardError => e
+        e
+      end
+    end
+
+    begin
+      raise "Capybara::ElementNotFound: Unable to find css \".allocation\""
+    rescue => e
+      raise server_error.class, server_error.message, server_error.backtrace
+    end
+  rescue => wrapper
+    wrapper
+  end
+
   def report_files
     Dir[File.join(@dir, "*.csv")]
   end
@@ -195,6 +222,15 @@ RSpec.describe VCR::LogUnmatchedCassettes do
       wrapped = wrap_with_cause(unmatched_error)
 
       expect(described_class.find_vcr_error(wrapped)).to be_a(VCR::Errors::UnhandledHTTPRequestError)
+    end
+
+    it "finds a VCR error whose class was lost crossing threads by its message" do
+      wrapped = wrap_across_threads(unmatched_error)
+
+      # The VCR error is no longer in the cause chain, only in the message.
+      expect(wrapped.cause).not_to be_a(VCR::Errors::UnhandledHTTPRequestError)
+
+      expect(described_class.find_vcr_error(wrapped)).to be(wrapped)
     end
 
     it "returns nil for an error that is not VCR related" do
