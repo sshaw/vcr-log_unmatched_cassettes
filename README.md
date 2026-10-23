@@ -50,6 +50,10 @@ Often one needs the path solely to delete the cassette and re-record it. This is
 
 Removing all cassettes is an option but this can clutter your git history with needless and _very_ bloated diffs.
 
+## See Also
+
+[vcr-unused_cassettes](https://github.com/jbockler/vcr-unused_cassettes) - Find unused VCR cassettes
+
 ## License
 
 The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
