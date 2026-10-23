@@ -3,12 +3,15 @@
 Make finding and re-recording unmatched [VCR cassettes](https://github.com/vcr/vcr) (test that fail due to `VCR::Errors::UnhandledHTTPRequestError`)
 easier by logging the test and unmatched cassette paths to a CSV.
 
+[![Ruby](https://github.com/sshaw/vcr-log_unmatched_cassettes/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/sshaw/vcr-log_unmatched_cassettes/actions/workflows/main.yml)
+
 ## Usage
 
 In your `Gemfile`
 
 ```rb
-gem "vcr-log_unmatched_cassettes", :group => "test"
+# development for Rake task access
+gem "vcr-log_unmatched_cassettes", :group => %w[test development]
 ```
 
 In your spec configuration, after loading VCR, call:
