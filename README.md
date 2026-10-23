@@ -19,6 +19,23 @@ VCR::LogUnmatchedCassettes.install
 Now tests that fail due to VCR being able to unmatch the request (`VCR::Errors::UnhandledHTTPRequestError`) will be output to the system's temp directory in a CSV.
 If you're using Rails it will be output to `./tmp`.
 
+## Deleting Cassettes
+
+Load the Rake task to delete cassettes listed in the `cassette` column of the latest report:
+
+```rb
+# Rakefile
+require "vcr/log_unmatched_cassettes/rake"
+```
+
+Then run:
+
+```
+rake vcr:log_unmatched_cassettes:delete_cassettes
+```
+
+Under Rails it is loaded automatically via a Railtie.
+
 ## Why?
 
 When tests fail due to unmatched HTTP requests the path is output within a large blob of text. This may be fine for a couple of tests but

@@ -7,6 +7,8 @@ require "csv"
 
 module VCR
   module LogUnmatchedCassettes
+    REPORT_PREFIX = "vcr-unmatched-cassettes"
+
     module MinitestHook         # :nodoc:
       # Minitest stores the test's exception by running it through
       # `sanitize_exception` in `capture_exceptions`. A marshable exception is
@@ -41,7 +43,7 @@ module VCR
 
       def install
         self.enabled = true if enabled.nil?
-        self.output_dir = defined?(Rails) && Rails.respond_to?(:root) ? Rails.root.join("tmp").to_s : Dir.tmpdir
+        self.output_dir = default_output_dir
 
         @failures = []
 
@@ -51,6 +53,14 @@ module VCR
           install_minitest
         else
           raise "VCR::LogUnmatchedCassettes requires RSpec or Minitest. Neither was found."
+        end
+      end
+
+      def default_output_dir
+        if defined?(Rails) && Rails.respond_to?(:root) && Rails.root
+          Rails.root.join("tmp").to_s
+        else
+          Dir.tmpdir
         end
       end
 
@@ -66,7 +76,7 @@ module VCR
         FileUtils.mkdir_p(output_dir)
 
         timestamp = Time.now.strftime("%Y%m%d%H%M%S")
-        filename  = File.join(output_dir, "vcr-unmatched-cassettes.#{timestamp}.csv")
+        filename  = File.join(output_dir, "#{REPORT_PREFIX}.#{timestamp}.csv")
 
         CSV.open(filename, "w") do |csv|
           csv << %w[test cassette]
@@ -120,3 +130,5 @@ module VCR
     end
   end
 end
+
+require "vcr/log_unmatched_cassettes/railtie" if defined?(::Rails::Railtie)
